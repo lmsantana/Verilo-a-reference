@@ -104,13 +104,35 @@ module reference(in,out)
   result = transition(expression, delay, rise_time, fall_time);
   result = slew(expression, max_pos_SR, max_neg_SR);
   
-  //events: used using @
+  //events: used using @, inside analog process to trigger a piece of code
   @(initial_step("ac","dc","tran"));
   @(final_step("noise"));
   @(cross(expression, direction0 +1 -1, timer_tol, expr_tol));
-  @(timer(start_time, period, time_tol))
+  @(timer(start_time, period, time_tol));
+      
+  @(above(expression, time_tol, expr_tol)); //expression is compared to 0 (>=)
+  //OR-events
+  @(initial_step or cross(V(clk),+1));
+    
+  //function
+  result = last_crossing(expression, direction)); //the time when a signal last crossed 0 in some direction, return negative is never crosses 0
+ 
+  $discontinuity(constant_expression); // tells the simulator that there is a discontinuity: 0 for equation, 1 for slope, -1 for $limit()
   
-  above(expression, time_tol, expr_tol); //expression is compared to 0
+  //Pre processor directives
+  'include "filename"
+  'define PI 3.14
+  'define SUM(A,B) A+B
   
+  'ifdef macro_name
+    //statements
+  'endif
   
+  'ifdef macro_name
+    //statements
+  'else
+    //statements
+  'endif
+    
+    
 endmodule
